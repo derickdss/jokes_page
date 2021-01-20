@@ -1,24 +1,46 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import "./App.css";
+
+interface IJokeCategories {
+  selectedCategory: string;
+  amount: number;
+  categories: Array<string>;
+}
+
+const apiCall = async (category: string, amount: number) => {
+  console.log("derd, in apiCall");
+  let response = await fetch(
+    `https://v2.jokeapi.dev/joke/${category}?amount=${amount}`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      console.log(data);
+      return data.jokes;
+    });
+  return response;
+};
 
 function App() {
+  const [jokeCategories, editJokeCategories] = useState<IJokeCategories>({
+    selectedCategory: "Programming",
+    amount: 10,
+    categories: ["Programming", "Misc", "Dark", "Pun", "Spooky", "Christmas"],
+  });
+  const [jokes, updateJokes] = useState();
+
+  useEffect(() => {
+    const fetchDataAsync = async () => {
+      let { selectedCategory, amount } = jokeCategories;
+      updateJokes(await apiCall(selectedCategory, amount));
+      //await apiCall(selectedCategory, amount);
+    };
+    fetchDataAsync();
+  }, [jokeCategories]);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div>Jokes Apart</div>
+      <div>list of jokes</div>
     </div>
   );
 }
