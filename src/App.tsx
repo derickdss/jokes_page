@@ -110,14 +110,19 @@ function App() {
       console.log("derd appcall2", categoriesReturnedObject);
       let {
         jokes: { categories },
+        jokes: { types },
       } = categoriesReturnedObject;
 
       if (safeMode) {
         categories.splice(categories.indexOf("Dark"), 1);
       }
+
+      types.unshift("Any");
+
       editJokeCategories({
         ...jokeCategories,
         categories: categories,
+        types: types,
       });
     };
     fetchJokesCategoryDataAsync();
