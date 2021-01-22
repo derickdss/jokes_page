@@ -1,10 +1,49 @@
 .App {
   text-align: center;
+  margin: 20px;
+  background-color: whitesmoke;
 }
 
 .App-logo {
   height: 40vmin;
   pointer-events: none;
+}
+
+.JokesContainer {
+  border: 1px solid black;
+  border-radius: 5px;
+  margin: 10px;
+  padding: 20px;
+}
+
+.IndividualJokeContainer1 {
+  padding: 10px;
+  background-color: beige;
+  border-radius: 5px;
+  margin: 10px;
+}
+
+.IndividualJokeContainer2 {
+  padding: 10px;
+  background-color: bisque;
+  border-radius: 5px;
+  margin: 10px;
+}
+
+.CategorySelection {
+  display: flex;
+  margin: 10px;
+  padding: 10px;
+  border: solid 1px black;
+}
+
+.DisplayingResultsText {
+  display: flex;
+  margin: 10px;
+}
+
+.FilterInputs {
+  margin: 0 10px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
