@@ -9,6 +9,7 @@ interface INumberOfJokes {
 interface IJokeCategories {
   selectedCategory: string;
   selectedType: string;
+  safeMode: true;
   categories: Array<string>;
   types: Array<string>;
 }
@@ -35,16 +36,27 @@ interface IJokeResponseFlags {
 const apiCall = async (
   category: string,
   type: string,
+  safe: boolean,
   numberOfJokesRequested: number,
   searchValue: string
 ) => {
   console.log("derd, in apiCall category", category);
   console.log("derd, in apiCall type", type);
   let searchString = searchValue ? `&contains=${searchValue}` : "";
-  let jokeType = type === "single" || "twopart" ? `&type=${type}` : "";
+  let safeMode = safe ? "safe-mode" : "";
+  let typeLowercase = type.toLowerCase();
+  let jokeType =
+    typeLowercase === "single" || "twopart" ? `&type=${typeLowercase}` : "";
   let response = await fetch(
-    `https://v2.jokeapi.dev/joke/${category}?safe-mode${searchString}${jokeType}&amount=${numberOfJokesRequested}`
+    `https://v2.jokeapi.dev/joke/${category}?${safeMode}${searchString}${jokeType}&amount=${numberOfJokesRequested}`
   )
+    .then((response) => response.json())
+    .then((data) => data);
+  return response;
+};
+
+const apiCall2 = async () => {
+  let response = await fetch(`https://v2.jokeapi.dev/info`)
     .then((response) => response.json())
     .then((data) => data);
   return response;
@@ -75,10 +87,11 @@ const jokeBox = (jokes: any) => {
 function App() {
   const [pageTitle, setPageTitle] = useState("Jokes Apart!!");
   const [jokeCategories, editJokeCategories] = useState<IJokeCategories>({
-    selectedCategory: "Programming",
-    selectedType: "any",
-    categories: ["Programming", "Misc", "Dark", "Pun", "Spooky", "Christmas"],
-    types: ["any", "single", "twopart"],
+    selectedCategory: "Any",
+    selectedType: "Any",
+    safeMode: true,
+    categories: [],
+    types: ["Any", "Single", "Twopart"],
   });
   const [numberOfJokes, editNumberOfJokes] = useState({
     jokesRequested: 10,
@@ -87,15 +100,35 @@ function App() {
   const [searchValue, setSearchValue] = useState<string>("");
   const [jokes, updateJokes] = useState<IJokeResponse>();
 
-  let { selectedCategory, selectedType, types } = jokeCategories;
+  let { selectedCategory, selectedType, types, safeMode } = jokeCategories;
   let { jokesRequested } = numberOfJokes;
   let { jokesReturned } = numberOfJokes;
 
   useEffect(() => {
-    const fetchDataAsync = async () => {
+    const fetchJokesCategoryDataAsync = async () => {
+      let categoriesReturnedObject = await apiCall2();
+      console.log("derd appcall2", categoriesReturnedObject);
+      let {
+        jokes: { categories },
+      } = categoriesReturnedObject;
+
+      if (safeMode) {
+        categories.splice(categories.indexOf("Dark"), 1);
+      }
+      editJokeCategories({
+        ...jokeCategories,
+        categories: categories,
+      });
+    };
+    fetchJokesCategoryDataAsync();
+  }, []);
+
+  useEffect(() => {
+    const fetchJokesDataAsync = async () => {
       let jokesReturned = await apiCall(
         selectedCategory,
         selectedType,
+        safeMode,
         jokesRequested,
         searchValue
       );
@@ -103,10 +136,11 @@ function App() {
         ...numberOfJokes,
         jokesReturned: jokesReturned.amount,
       });
+      console.log("derd, categories", jokeCategories);
       console.log("derd, jokes retunred", jokesReturned);
       updateJokes(jokesReturned.jokes);
     };
-    fetchDataAsync();
+    fetchJokesDataAsync();
   }, [jokeCategories, searchValue]);
 
   return (
@@ -123,7 +157,7 @@ function App() {
         </div>
         <div className={"FilterInputs"}>
           <span>Category: </span>
-          {jokeCategories ? (
+          {jokeCategories.categories ? (
             <select
               onChange={(e) =>
                 editJokeCategories({
@@ -153,7 +187,7 @@ function App() {
                 })
               }
             >
-              {jokeCategories.types.map((type, index) => {
+              {types.map((type, index) => {
                 return (
                   <option key={index} value={type}>
                     {type}
