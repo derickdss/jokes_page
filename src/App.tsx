@@ -4,6 +4,7 @@ import "./App.css";
 interface INumberOfJokes {
   jokesRequested: number;
   jokesReturned: number;
+  jokesAvailable: number;
 }
 
 interface IJokeCategories {
@@ -33,15 +34,17 @@ interface IJokeResponseFlags {
   sexist: boolean;
 }
 
-const apiCall = async (
+// can refactor and create a seperate apiCall function
+
+const fetchJokes = async (
   category: string,
   type: string,
   safe: boolean,
   numberOfJokesRequested: number,
   searchValue: string
 ) => {
-  console.log("derd, in apiCall category", category);
-  console.log("derd, in apiCall type", type);
+  console.log("derd, in fetchJokes category", category);
+  console.log("derd, in fetchJokes type", type);
   let searchString = searchValue ? `&contains=${searchValue}` : "";
   let safeMode = safe ? "safe-mode" : "";
   let typeLowercase = type.toLowerCase();
@@ -55,7 +58,7 @@ const apiCall = async (
   return response;
 };
 
-const apiCall2 = async () => {
+const fetchJokesData = async () => {
   let response = await fetch(`https://v2.jokeapi.dev/info`)
     .then((response) => response.json())
     .then((data) => data);
@@ -85,32 +88,31 @@ const jokeBox = (jokes: any) => {
 };
 
 function App() {
-  const [pageTitle, setPageTitle] = useState("Jokes Apart!!");
+  const pageTitle = "Jokes Apart!!";
   const [jokeCategories, editJokeCategories] = useState<IJokeCategories>({
     selectedCategory: "Any",
     selectedType: "Any",
     safeMode: true,
     categories: [],
-    types: ["Any", "Single", "Twopart"],
+    types: [],
   });
-  const [numberOfJokes, editNumberOfJokes] = useState({
+  const [numberOfJokes, editNumberOfJokes] = useState<INumberOfJokes>({
     jokesRequested: 10,
     jokesReturned: 0,
+    jokesAvailable: 0,
   });
   const [searchValue, setSearchValue] = useState<string>("");
   const [jokes, updateJokes] = useState<IJokeResponse>();
 
   let { selectedCategory, selectedType, types, safeMode } = jokeCategories;
-  let { jokesRequested } = numberOfJokes;
-  let { jokesReturned } = numberOfJokes;
+  let { jokesRequested, jokesReturned, jokesAvailable } = numberOfJokes;
 
   useEffect(() => {
-    const fetchJokesCategoryDataAsync = async () => {
-      let categoriesReturnedObject = await apiCall2();
+    const fetchJokesDataAsync = async () => {
+      let categoriesReturnedObject = await fetchJokesData();
       console.log("derd appcall2", categoriesReturnedObject);
       let {
-        jokes: { categories },
-        jokes: { types },
+        jokes: { categories, types, totalCount },
       } = categoriesReturnedObject;
 
       if (safeMode) {
@@ -119,18 +121,24 @@ function App() {
 
       types.unshift("Any");
 
+      editNumberOfJokes({
+        ...numberOfJokes,
+        jokesAvailable: totalCount,
+      });
+
       editJokeCategories({
         ...jokeCategories,
         categories: categories,
         types: types,
       });
     };
-    fetchJokesCategoryDataAsync();
+    fetchJokesDataAsync();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    const fetchJokesDataAsync = async () => {
-      let jokesReturned = await apiCall(
+    const fetchJokesAsync = async () => {
+      let jokesReturned = await fetchJokes(
         selectedCategory,
         selectedType,
         safeMode,
@@ -145,7 +153,8 @@ function App() {
       console.log("derd, jokes retunred", jokesReturned);
       updateJokes(jokesReturned.jokes);
     };
-    fetchJokesDataAsync();
+    fetchJokesAsync();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jokeCategories, searchValue]);
 
   return (
@@ -162,7 +171,7 @@ function App() {
         </div>
         <div className={"FilterInputs"}>
           <span>Category: </span>
-          {jokeCategories.categories ? (
+          {jokeCategories.categories.length ? (
             <select
               onChange={(e) =>
                 editJokeCategories({
@@ -173,7 +182,7 @@ function App() {
             >
               {jokeCategories.categories.map((category, index) => {
                 return (
-                  <option key={index} value={category}>
+                  <option key={`category${index}`} value={category}>
                     {category}
                   </option>
                 );
@@ -183,7 +192,7 @@ function App() {
         </div>
         <div className={"FilterInputs"}>
           <span>Type: </span>
-          {jokeCategories ? (
+          {jokeCategories.types.length ? (
             <select
               onChange={(e) =>
                 editJokeCategories({
@@ -194,7 +203,7 @@ function App() {
             >
               {types.map((type, index) => {
                 return (
-                  <option key={index} value={type}>
+                  <option key={`type${index}`} value={type}>
                     {type}
                   </option>
                 );
@@ -207,10 +216,9 @@ function App() {
         <span>
           {jokesReturned
             ? `Displaying ${jokesReturned} jokes in
-          ${selectedCategory}`
+          ${selectedCategory}. Total Jokes: ${jokesAvailable}`
             : `No results found!`}
         </span>
-        <span></span>
       </div>
       <div className={"JokesContainer"}>
         {jokes ? jokeBox(jokes) : `No results found!`}
