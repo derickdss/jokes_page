@@ -216,7 +216,7 @@ function App() {
         <span>
           {jokesReturned
             ? `Displaying ${jokesReturned} jokes in
-          ${selectedCategory}. Total Jokes: ${jokesAvailable}`
+          ${selectedCategory} category. A total of ${jokesAvailable} are available in all categories.`
             : `No results found!`}
         </span>
       </div>
