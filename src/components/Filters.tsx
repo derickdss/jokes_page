@@ -19,7 +19,7 @@ export const Filters = ({
   postJoke: IPostingJoke;
   setPostJoke: (postJoke: IPostingJoke) => void;
 }) => {
-  const { selectedCategory, types } = jokeCategories;
+  const { selectedCategory } = jokeCategories;
   return (
     <div className={"CategorySelection"}>
       <div className={"FilterInputs"}>

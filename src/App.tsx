@@ -3,7 +3,6 @@ import {
   IJokeCategories,
   INumberOfJokes,
   IJokeResponse,
-  IJokeResponseFlags,
   IPostingJoke,
 } from "./components/Interfaces";
 import { Filters } from "./components/Filters";
@@ -95,17 +94,17 @@ function App() {
     },
   });
 
-  let { selectedCategory, selectedType, types, safeMode } = jokeCategories;
+  let { selectedCategory, selectedType, safeMode } = jokeCategories;
   let { jokesRequested, jokesReturned, jokesAvailable } = numberOfJokes;
   let { postingMode } = postJoke;
 
-  const submitJokeHandler = () => {
+  /*const submitJokeHandler = () => {
     console.log("derd is submit");
     setPostJoke({
       ...postJoke,
       postingMode: false,
     });
-  };
+  };*/
 
   useEffect(() => {
     const fetchJokesDataAsync = async () => {
