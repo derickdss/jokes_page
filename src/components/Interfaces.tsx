@@ -31,7 +31,23 @@ export interface IJokeResponseFlags {
   sexist: boolean;
 }
 
-export interface IPostingjoke {
+export interface IPostingJoke {
   postingMode: boolean;
-  joke: {};
+  payload: {
+    formatVersion: number;
+    category: string;
+    type: string;
+    joke?: string;
+    setup?: string;
+    delivery?: string;
+    flags: {
+      nsfw: boolean;
+      religious: boolean;
+      political: boolean;
+      racist: boolean;
+      sexist: boolean;
+      explicit: boolean;
+    };
+    lang: string;
+  };
 }

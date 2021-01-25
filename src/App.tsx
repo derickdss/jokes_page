@@ -4,7 +4,7 @@ import {
   INumberOfJokes,
   IJokeResponse,
   IJokeResponseFlags,
-  IPostingjoke,
+  IPostingJoke,
 } from "./components/Interfaces";
 import "./App.css";
 
@@ -17,8 +17,6 @@ const fetchJokes = async (
   numberOfJokesRequested: number,
   searchValue: string
 ) => {
-  console.log("derd, in fetchJokes category", category);
-  console.log("derd, in fetchJokes type", type);
   let searchString = searchValue ? `&contains=${searchValue}` : "";
   let safeMode = safe ? "safe-mode" : "";
   let typeLowercase = type.toLowerCase();
@@ -64,19 +62,31 @@ const jokeBox = (jokes: any) => {
 const PostJoke = ({
   jokeCategories,
   editJokeCategories,
+  postingMode,
+  postJoke,
+  setPostJoke,
 }: {
   jokeCategories: IJokeCategories;
   editJokeCategories: (jokeCategories: IJokeCategories) => void;
+  postingMode: boolean;
+  postJoke: IPostingJoke;
+  setPostJoke: (postJoke: IPostingJoke) => void;
 }) => {
   return (
     <div className={"CategorySelection"}>
       <Categories
         jokeCategories={jokeCategories}
         editJokeCategories={editJokeCategories}
+        postingMode={postingMode}
+        postJoke={postJoke}
+        setPostJoke={setPostJoke}
       />
       <Types
         jokeCategories={jokeCategories}
         editJokeCategories={editJokeCategories}
+        postingMode={postingMode}
+        postJoke={postJoke}
+        setPostJoke={setPostJoke}
       />
     </div>
   );
@@ -85,9 +95,15 @@ const PostJoke = ({
 const Categories = ({
   jokeCategories,
   editJokeCategories,
+  postingMode,
+  postJoke,
+  setPostJoke,
 }: {
   jokeCategories: IJokeCategories;
   editJokeCategories: (jokeCategories: IJokeCategories) => void;
+  postingMode: boolean;
+  postJoke: IPostingJoke;
+  setPostJoke: (postJoke: IPostingJoke) => void;
 }) => {
   return (
     <div className={"FilterInputs"}>
@@ -95,10 +111,15 @@ const Categories = ({
       {jokeCategories.categories.length ? (
         <select
           onChange={(e) =>
-            editJokeCategories({
-              ...jokeCategories,
-              selectedCategory: e.target.value,
-            })
+            !postingMode
+              ? editJokeCategories({
+                  ...jokeCategories,
+                  selectedCategory: e.target.value,
+                })
+              : setPostJoke({
+                  ...postJoke,
+                  payload: { ...postJoke.payload, category: e.target.value },
+                })
           }
         >
           {jokeCategories.categories.map((category, index) => {
@@ -117,9 +138,15 @@ const Categories = ({
 const Types = ({
   jokeCategories,
   editJokeCategories,
+  postingMode,
+  postJoke,
+  setPostJoke,
 }: {
   jokeCategories: IJokeCategories;
   editJokeCategories: (jokeCategories: IJokeCategories) => void;
+  postingMode: boolean;
+  postJoke: IPostingJoke;
+  setPostJoke: (postJoke: IPostingJoke) => void;
 }) => {
   const { types } = jokeCategories;
   return (
@@ -128,10 +155,15 @@ const Types = ({
       {jokeCategories.types.length ? (
         <select
           onChange={(e) =>
-            editJokeCategories({
-              ...jokeCategories,
-              selectedType: e.target.value,
-            })
+            !postingMode
+              ? editJokeCategories({
+                  ...jokeCategories,
+                  selectedType: e.target.value,
+                })
+              : setPostJoke({
+                  ...postJoke,
+                  payload: { ...postJoke.payload, type: e.target.value },
+                })
           }
         >
           {types.map((type, index) => {
@@ -152,11 +184,17 @@ const Filters = ({
   setSearchValue,
   jokeCategories,
   editJokeCategories,
+  postingMode,
+  postJoke,
+  setPostJoke,
 }: {
   searchValue: string;
   setSearchValue: (searchValue: string) => void;
   jokeCategories: IJokeCategories;
   editJokeCategories: (jokeCategories: IJokeCategories) => void;
+  postingMode: boolean;
+  postJoke: IPostingJoke;
+  setPostJoke: (postJoke: IPostingJoke) => void;
 }) => {
   const { selectedCategory, types } = jokeCategories;
   return (
@@ -173,10 +211,16 @@ const Filters = ({
       <Categories
         jokeCategories={jokeCategories}
         editJokeCategories={editJokeCategories}
+        postingMode={postingMode}
+        postJoke={postJoke}
+        setPostJoke={setPostJoke}
       />
       <Types
         jokeCategories={jokeCategories}
         editJokeCategories={editJokeCategories}
+        postingMode={postingMode}
+        postJoke={postJoke}
+        setPostJoke={setPostJoke}
       />
     </div>
   );
@@ -198,14 +242,36 @@ function App() {
   });
   const [searchValue, setSearchValue] = useState<string>("");
   const [jokes, updateJokes] = useState<IJokeResponse>();
-  const [postJoke, setPostJoke] = useState<IPostingjoke>({
+  const [postJoke, setPostJoke] = useState<IPostingJoke>({
     postingMode: false,
-    joke: {},
+    payload: {
+      formatVersion: 3,
+      type: "single",
+      category: "",
+      joke: "A horse walks into a bar...",
+      flags: {
+        nsfw: true,
+        religious: false,
+        political: true,
+        racist: false,
+        sexist: false,
+        explicit: false,
+      },
+      lang: "en",
+    },
   });
 
   let { selectedCategory, selectedType, types, safeMode } = jokeCategories;
   let { jokesRequested, jokesReturned, jokesAvailable } = numberOfJokes;
   let { postingMode } = postJoke;
+
+  const submitJokeHandler = () => {
+    console.log("derd is submit");
+    setPostJoke({
+      ...postJoke,
+      postingMode: false,
+    });
+  };
 
   useEffect(() => {
     const fetchJokesDataAsync = async () => {
@@ -245,6 +311,7 @@ function App() {
         jokesRequested,
         searchValue
       );
+      console.log("derd, jokes returned", jokesReturned);
       editNumberOfJokes({
         ...numberOfJokes,
         jokesReturned: jokesReturned.amount,
@@ -259,13 +326,20 @@ function App() {
     <div className="App">
       <div className="PageTitle">{pageTitle}</div>
       <div className="FilterPostJokeOptions">
-        <div className={"FilterSectionTitle"}>Filters:</div>
-        <Filters
-          searchValue={searchValue}
-          setSearchValue={setSearchValue}
-          jokeCategories={jokeCategories}
-          editJokeCategories={editJokeCategories}
-        />
+        {!postingMode ? (
+          <div>
+            <div className={"FilterSectionTitle"}>Filters:</div>
+            <Filters
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+              jokeCategories={jokeCategories}
+              editJokeCategories={editJokeCategories}
+              postingMode={postingMode}
+              postJoke={postJoke}
+              setPostJoke={setPostJoke}
+            />
+          </div>
+        ) : null}
         <div className={"FilterSectionTitle"}>
           <button
             onClick={() =>
@@ -280,6 +354,9 @@ function App() {
             <PostJoke
               jokeCategories={jokeCategories}
               editJokeCategories={editJokeCategories}
+              postingMode={postingMode}
+              postJoke={postJoke}
+              setPostJoke={setPostJoke}
             />
             <div className={"FilterSectionTitle"}>
               Joke:
@@ -289,7 +366,7 @@ function App() {
               ></textarea>
             </div>
             <div className={"FilterSectionTitle"}>
-              <button>Submit Joke!</button>
+              <button onClick={() => submitJokeHandler()}>Submit Joke!</button>
             </div>
           </div>
         ) : null}
