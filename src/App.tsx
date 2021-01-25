@@ -1,38 +1,13 @@
 import React, { useEffect, useState } from "react";
+import {
+  IJokeCategories,
+  INumberOfJokes,
+  IJokeResponse,
+  IJokeResponseFlags,
+  IPostingJoke,
+} from "./components/Interfaces";
+import { Filters } from "./components/Filters";
 import "./App.css";
-
-interface INumberOfJokes {
-  jokesRequested: number;
-  jokesReturned: number;
-  jokesAvailable: number;
-}
-
-interface IJokeCategories {
-  selectedCategory: string;
-  selectedType: string;
-  safeMode: true;
-  categories: Array<string>;
-  types: Array<string>;
-}
-
-interface IJokeResponse {
-  category: string;
-  delivery: string;
-  flags: IJokeResponseFlags;
-  id: number;
-  lang: string;
-  safe: boolean;
-  setup: string;
-  type: string;
-}
-
-interface IJokeResponseFlags {
-  nsfw: boolean;
-  religious: boolean;
-  political: boolean;
-  racist: boolean;
-  sexist: boolean;
-}
 
 // can refactor and create a seperate apiCall function
 
@@ -43,8 +18,6 @@ const fetchJokes = async (
   numberOfJokesRequested: number,
   searchValue: string
 ) => {
-  console.log("derd, in fetchJokes category", category);
-  console.log("derd, in fetchJokes type", type);
   let searchString = searchValue ? `&contains=${searchValue}` : "";
   let safeMode = safe ? "safe-mode" : "";
   let typeLowercase = type.toLowerCase();
@@ -103,9 +76,36 @@ function App() {
   });
   const [searchValue, setSearchValue] = useState<string>("");
   const [jokes, updateJokes] = useState<IJokeResponse>();
+  const [postJoke, setPostJoke] = useState<IPostingJoke>({
+    postingMode: false,
+    payload: {
+      formatVersion: 3,
+      type: "single",
+      category: "",
+      joke: "A horse walks into a bar...",
+      flags: {
+        nsfw: true,
+        religious: false,
+        political: true,
+        racist: false,
+        sexist: false,
+        explicit: false,
+      },
+      lang: "en",
+    },
+  });
 
   let { selectedCategory, selectedType, types, safeMode } = jokeCategories;
   let { jokesRequested, jokesReturned, jokesAvailable } = numberOfJokes;
+  let { postingMode } = postJoke;
+
+  const submitJokeHandler = () => {
+    console.log("derd is submit");
+    setPostJoke({
+      ...postJoke,
+      postingMode: false,
+    });
+  };
 
   useEffect(() => {
     const fetchJokesDataAsync = async () => {
@@ -145,12 +145,11 @@ function App() {
         jokesRequested,
         searchValue
       );
+      console.log("derd, jokes returned", jokesReturned);
       editNumberOfJokes({
         ...numberOfJokes,
         jokesReturned: jokesReturned.amount,
       });
-      console.log("derd, categories", jokeCategories);
-      console.log("derd, jokes retunred", jokesReturned);
       updateJokes(jokesReturned.jokes);
     };
     fetchJokesAsync();
@@ -160,57 +159,21 @@ function App() {
   return (
     <div className="App">
       <div className="PageTitle">{pageTitle}</div>
-      <div className={"CategorySelection"}>
-        <div className={"FilterInputs"}>
-          <input
-            type="text"
-            value={searchValue}
-            placeholder={`Search in ${selectedCategory}`}
-            onChange={(e) => setSearchValue(e.target.value)}
-          ></input>
-        </div>
-        <div className={"FilterInputs"}>
-          <span>Category: </span>
-          {jokeCategories.categories.length ? (
-            <select
-              onChange={(e) =>
-                editJokeCategories({
-                  ...jokeCategories,
-                  selectedCategory: e.target.value,
-                })
-              }
-            >
-              {jokeCategories.categories.map((category, index) => {
-                return (
-                  <option key={`category${index}`} value={category}>
-                    {category}
-                  </option>
-                );
-              })}
-            </select>
-          ) : null}
-        </div>
-        <div className={"FilterInputs"}>
-          <span>Type: </span>
-          {jokeCategories.types.length ? (
-            <select
-              onChange={(e) =>
-                editJokeCategories({
-                  ...jokeCategories,
-                  selectedType: e.target.value,
-                })
-              }
-            >
-              {types.map((type, index) => {
-                return (
-                  <option key={`type${index}`} value={type}>
-                    {type}
-                  </option>
-                );
-              })}
-            </select>
-          ) : null}
-        </div>
+      <div className="FilterPostJokeOptions">
+        {!postingMode ? (
+          <div>
+            <div className={"FilterSectionTitle"}>Filters:</div>
+            <Filters
+              searchValue={searchValue}
+              setSearchValue={setSearchValue}
+              jokeCategories={jokeCategories}
+              editJokeCategories={editJokeCategories}
+              postingMode={postingMode}
+              postJoke={postJoke}
+              setPostJoke={setPostJoke}
+            />
+          </div>
+        ) : null}
       </div>
       <div className={"DisplayingResultsText"}>
         <span>
