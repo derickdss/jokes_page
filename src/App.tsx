@@ -6,6 +6,7 @@ import {
   IJokeResponseFlags,
   IPostingJoke,
 } from "./components/Interfaces";
+import { Filters } from "./components/Filters";
 import "./App.css";
 
 // can refactor and create a seperate apiCall function
@@ -57,173 +58,6 @@ const jokeBox = (jokes: any) => {
     }
   });
   return jokesContainer;
-};
-
-const PostJoke = ({
-  jokeCategories,
-  editJokeCategories,
-  postingMode,
-  postJoke,
-  setPostJoke,
-}: {
-  jokeCategories: IJokeCategories;
-  editJokeCategories: (jokeCategories: IJokeCategories) => void;
-  postingMode: boolean;
-  postJoke: IPostingJoke;
-  setPostJoke: (postJoke: IPostingJoke) => void;
-}) => {
-  return (
-    <div className={"CategorySelection"}>
-      <Categories
-        jokeCategories={jokeCategories}
-        editJokeCategories={editJokeCategories}
-        postingMode={postingMode}
-        postJoke={postJoke}
-        setPostJoke={setPostJoke}
-      />
-      <Types
-        jokeCategories={jokeCategories}
-        editJokeCategories={editJokeCategories}
-        postingMode={postingMode}
-        postJoke={postJoke}
-        setPostJoke={setPostJoke}
-      />
-    </div>
-  );
-};
-
-const Categories = ({
-  jokeCategories,
-  editJokeCategories,
-  postingMode,
-  postJoke,
-  setPostJoke,
-}: {
-  jokeCategories: IJokeCategories;
-  editJokeCategories: (jokeCategories: IJokeCategories) => void;
-  postingMode: boolean;
-  postJoke: IPostingJoke;
-  setPostJoke: (postJoke: IPostingJoke) => void;
-}) => {
-  return (
-    <div className={"FilterInputs"}>
-      <span>Category: </span>
-      {jokeCategories.categories.length ? (
-        <select
-          onChange={(e) =>
-            !postingMode
-              ? editJokeCategories({
-                  ...jokeCategories,
-                  selectedCategory: e.target.value,
-                })
-              : setPostJoke({
-                  ...postJoke,
-                  payload: { ...postJoke.payload, category: e.target.value },
-                })
-          }
-        >
-          {jokeCategories.categories.map((category, index) => {
-            return (
-              <option key={`category${index}`} value={category}>
-                {category}
-              </option>
-            );
-          })}
-        </select>
-      ) : null}
-    </div>
-  );
-};
-
-const Types = ({
-  jokeCategories,
-  editJokeCategories,
-  postingMode,
-  postJoke,
-  setPostJoke,
-}: {
-  jokeCategories: IJokeCategories;
-  editJokeCategories: (jokeCategories: IJokeCategories) => void;
-  postingMode: boolean;
-  postJoke: IPostingJoke;
-  setPostJoke: (postJoke: IPostingJoke) => void;
-}) => {
-  const { types } = jokeCategories;
-  return (
-    <div className={"FilterInputs"}>
-      <span>Type: </span>
-      {jokeCategories.types.length ? (
-        <select
-          onChange={(e) =>
-            !postingMode
-              ? editJokeCategories({
-                  ...jokeCategories,
-                  selectedType: e.target.value,
-                })
-              : setPostJoke({
-                  ...postJoke,
-                  payload: { ...postJoke.payload, type: e.target.value },
-                })
-          }
-        >
-          {types.map((type, index) => {
-            return (
-              <option key={`type${index}`} value={type}>
-                {type}
-              </option>
-            );
-          })}
-        </select>
-      ) : null}
-    </div>
-  );
-};
-
-const Filters = ({
-  searchValue,
-  setSearchValue,
-  jokeCategories,
-  editJokeCategories,
-  postingMode,
-  postJoke,
-  setPostJoke,
-}: {
-  searchValue: string;
-  setSearchValue: (searchValue: string) => void;
-  jokeCategories: IJokeCategories;
-  editJokeCategories: (jokeCategories: IJokeCategories) => void;
-  postingMode: boolean;
-  postJoke: IPostingJoke;
-  setPostJoke: (postJoke: IPostingJoke) => void;
-}) => {
-  const { selectedCategory, types } = jokeCategories;
-  return (
-    <div className={"CategorySelection"}>
-      <div className={"FilterInputs"}>
-        <span>String search:</span>
-        <input
-          type="text"
-          value={searchValue}
-          placeholder={`Search in ${selectedCategory}`}
-          onChange={(e) => setSearchValue(e.target.value)}
-        ></input>
-      </div>
-      <Categories
-        jokeCategories={jokeCategories}
-        editJokeCategories={editJokeCategories}
-        postingMode={postingMode}
-        postJoke={postJoke}
-        setPostJoke={setPostJoke}
-      />
-      <Types
-        jokeCategories={jokeCategories}
-        editJokeCategories={editJokeCategories}
-        postingMode={postingMode}
-        postJoke={postJoke}
-        setPostJoke={setPostJoke}
-      />
-    </div>
-  );
 };
 
 function App() {
@@ -338,36 +172,6 @@ function App() {
               postJoke={postJoke}
               setPostJoke={setPostJoke}
             />
-          </div>
-        ) : null}
-        <div className={"FilterSectionTitle"}>
-          <button
-            onClick={() =>
-              setPostJoke({ ...postJoke, postingMode: !postingMode })
-            }
-          >
-            {!postingMode ? "Post your own joke" : "Collapse"}
-          </button>
-        </div>
-        {postingMode ? (
-          <div>
-            <PostJoke
-              jokeCategories={jokeCategories}
-              editJokeCategories={editJokeCategories}
-              postingMode={postingMode}
-              postJoke={postJoke}
-              setPostJoke={setPostJoke}
-            />
-            <div className={"FilterSectionTitle"}>
-              Joke:
-              <textarea
-                name={"textarea"}
-                style={{ width: "250px", height: "150px" }}
-              ></textarea>
-            </div>
-            <div className={"FilterSectionTitle"}>
-              <button onClick={() => submitJokeHandler()}>Submit Joke!</button>
-            </div>
           </div>
         ) : null}
       </div>
