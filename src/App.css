@@ -30,11 +30,18 @@
   margin: 10px;
 }
 
-.CategorySelection {
-  display: flex;
+.FilterPostJokeOptions {
+  border: solid 1px black;
   margin: 10px;
   padding: 10px;
-  border: solid 1px black;
+}
+.CategorySelection {
+  display: flex;
+}
+
+.FilterSectionTitle {
+  display: flex;
+  margin: 10px 10px 0px 10px;
 }
 
 .DisplayingResultsText {
