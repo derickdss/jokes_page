@@ -13,4 +13,4 @@ React:
 The page uses functional programming with hooks to take care of the state. I did consider using Redux using hooks and possibly thunks for async, but considered time constraints and as the page wasn't too complicated yet, stuck to hooks. I would use redux moving forwards in order to simplify and centralize the store usage.
 The page also uses Typescript in order to define types. I have tried to define the functionalities and JSX bits using seperate functions to reduce redundant code and also have re-usable components.
 
-I was moving onto the functionality to add new Jokes using the dry-run parameter but prioritized making the code more readable before having maximum functionality. 
+Will be adding a add joke feature using the 'Post_Joke' branch. 
